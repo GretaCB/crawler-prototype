@@ -3,12 +3,13 @@ const express = require("express")
 const app = express()
 const port = 9000
 const uuidv4 = require('uuid/v4');
+const redis = require("./redis-client");
 
 /* Configure express app */
 app.use(express.json());
 
-app.get("/", function(req, res) {
-    res.send("How to use the Crawler service...")
+app.get('/', function(req, res) {
+    res.send('How to use the Crawler service...');
 });
 
 app.post('/', function (req, res) {
@@ -18,7 +19,7 @@ app.post('/', function (req, res) {
   const id = uuidv4();
 
   // fork another process
-  const process = fork('./crawl.js');
+  const process = fork('./crawler.js');
 
   const msg = {
   	id: id, 

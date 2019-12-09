@@ -1,3 +1,8 @@
+const redis = require('./redis-client');
+const axios = require('axios');
+const cheerio = require('cheerio');
+const utils = require('./utils/index');
+
 async function sendMultipleMails(mails) {   
 	let sendMails = 0;   
 
