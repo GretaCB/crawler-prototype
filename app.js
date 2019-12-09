@@ -21,8 +21,8 @@ app.get('/status/:id', async function(req, res) {
       return res.status(404).send({ error: 'Crawl ID does not exist' })
     }
 
-    status['Status'] = record.status;
-    status['Unique URLs Crawled'] = (Object.keys(record.urls)).length;
+    status['status'] = record.status;
+    status['unique urls crawled'] = (Object.keys(record.urls)).length;
     return res.json(status);
 });
 
