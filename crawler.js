@@ -6,17 +6,15 @@ const utils = require('./utils/index');
 let total_crawled = 0;
 let id = '';
 
-async function crawl(url, level) {   
+async function _crawl(url, level) {   
 	// Check if we've reached the last level
 	// If so, no need to do anymore work
 	if (level == 0) return;
+	
 	let urls = {};
-	let record;
 
-	// TODO: Check dns cache to see if the url has been hit before 
-	// TODO: Check request cache to see if page contents already stored
+	// Check request cache to see if page contents already stored
 	const request_cached = await redis.getRequestCache(url);
-	console.log('request_cache: ' + request_cached);
 	
 	// Make request to URL if not cached
 	if (utils.isnull(request_cached)) {
@@ -30,15 +28,15 @@ async function crawl(url, level) {
 			throw err;
 		}
 	} else urls = request_cached;
-
-	console.log('urls: ' + JSON.stringify(urls));
 	
-	// record = {};
-	// record.urls_crawled = total_crawled;
-	// console.log(record);
-	// // Update results in record
+	// iterate through urls...?
+
+	let record = JSON.parse(await redis.getCrawlRecord(id));
+	record.urls_crawled = total_crawled;
+
+	// Update results in record
 	await redis.setCrawlRecord(id, JSON.stringify(record));
-	return await crawl(url, level-1);	
+	return await _crawl(url, level-1);	
 }
 
 async function _getLinks($) {
@@ -70,7 +68,7 @@ process.on('message', async (message) => {
 	id = message.id;
 
 	try {
-		await crawl(message.seedurl, message.levels);
+		await _crawl(message.seedurl, message.levels);
 	} catch(err){
 		console.log('caught error when triggering crawl');
 		throw err;

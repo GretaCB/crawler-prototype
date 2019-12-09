@@ -1,15 +1,26 @@
 const { fork } = require('child_process');
-const express = require("express")
+const express = require('express');
 const app = express()
 const port = 9000
 const uuidv4 = require('uuid/v4');
 const redis = require("./redis-client");
+const utils = require('./utils/index');
 
 /* Configure express app */
 app.use(express.json());
 
 app.get('/', function(req, res) {
     res.send('How to use the Crawler service...');
+});
+
+app.get('/results/:id', async function(req, res) {
+    const record = await redis.getCrawlRecord(req.param.id);
+    
+    if (utils.isnull(record)) {
+      return res.status(404).send({ error: 'Crawl ID does not exist' })
+    }
+
+    return res.json(record);
 });
 
 app.post('/', async function (req, res) {
@@ -29,7 +40,12 @@ app.post('/', async function (req, res) {
   }
   
   // Put new record into datastore
-  await redis.setCrawlRecord(id, JSON.stringify(msg));
+  try {
+    await redis.setCrawlRecord(id, JSON.stringify(msg));
+  } catch(err) {
+    console.log('caught error when trying to set the record for first time');
+    throw err;
+  }
   
   // Send message to crawler to start crawling
   process.send(msg); 
@@ -38,7 +54,11 @@ app.post('/', async function (req, res) {
 
 });
 
-app.listen(port, () => console.log(`Crawler ready on port ${port}...`))
+// Initialize potentially multiple redis DBs (request cache and crawl datastore)
+redis.init(function(err) {
+  if (err) throw err;
+  app.listen(port, () => console.log(`Crawler ready on port ${port}...`))
+});
 
 // Export for testing
 module.exports = app;
