@@ -2,10 +2,6 @@ const redis = require('redis');
 const client = redis.createClient();
 const {promisify} = require('util');
 
-const _requestcache = 1; // cache of already-requested page contents
-const _crawlstore = 2;  // datastore of crawls: triggered via the POST endpoint
-//const _resultsstore = 3; // when spiders reach maxDepth, they push their results here?
-
 async function _getRequestCache(key) {
 	const get = promisify(this.REQUESTCACHE.get).bind(client);
 	return get(key).then(function(res) {
@@ -38,10 +34,9 @@ client.on('error', (err) => {
   console.log(err);
 });
 
-// TODO: Is there a way to not trigger this for tests? Perhaps a redis mock?
 client.on('ready', () => {
 	// console.log('Flushing all DBs for fresh start (only use for prototype)...');
-	// client.flushall();
+	//client.flushall();
 	console.log('Redis is ready!');
 });
 

@@ -13,14 +13,27 @@ app.get('/', function(req, res) {
     res.send('How to use the Crawler service...');
 });
 
-app.get('/results/:id', async function(req, res) {
-    const record = await redis.getCrawlRecord(req.param.id);
+app.get('/status/:id', async function(req, res) {
+    const status = {};
+    const record = JSON.parse(await redis.getCrawlRecord(req.params.id));
+
+    if (utils.isnull(record)) {
+      return res.status(404).send({ error: 'Crawl ID does not exist' })
+    }
+
+    status['Status'] = record.status;
+    status['Unique URLs Crawled'] = (Object.keys(record.urls)).length;
+    return res.json(status);
+});
+
+app.get('/result/:id', async function(req, res) {
+    const record = JSON.parse(await redis.getCrawlRecord(req.params.id));
     
     if (utils.isnull(record)) {
       return res.status(404).send({ error: 'Crawl ID does not exist' })
     }
 
-    return res.json(record);
+    return res.json(record.urls);
 });
 
 app.post('/', async function (req, res) {
@@ -36,7 +49,8 @@ app.post('/', async function (req, res) {
   	id: id, 
   	seedurl: req.body.seedurl, 
   	levels: req.body.levels,
-    status: 'pending'
+    status: 'pending',
+    urls: {}
   }
   
   // Put new record into datastore

@@ -2,8 +2,6 @@ const request = require("supertest");
 const assert = require('assert');
 const app = require("../app.js");
 
-//let base = 'http://localhost:9000/';
-
 describe('GET /', function() {
   it('responds with expected string', function(done) {
     request(app)
@@ -26,6 +24,7 @@ describe('POST /', function() {
       	assert.equal(res.body.seedurl, expectedurl);
       	assert.equal(res.body.status, 'pending');
       	assert.notStrictEqual(res.body.id, undefined);
+      	persistedid = res.body.id;
       	done();
       });
   });

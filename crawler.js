@@ -27,16 +27,30 @@ async function _crawl(url, level) {
 			console.log('caught error when requesting cache');
 			throw err;
 		}
-	} else urls = request_cached;
-	
-	// iterate through urls...?
+	} else urls = JSON.parse(request_cached);
 
 	let record = JSON.parse(await redis.getCrawlRecord(id));
-	record.urls_crawled = total_crawled;
+	let updatedRecord = _urlCount(urls, record);
+
+	updatedRecord.urls_crawled = total_crawled;
 
 	// Update results in record
-	await redis.setCrawlRecord(id, JSON.stringify(record));
+	await redis.setCrawlRecord(id, JSON.stringify(updatedRecord));
 	return await _crawl(url, level-1);	
+}
+
+// Add found URLs to record
+function _urlCount(urls, record) {
+	for (let i in urls) {
+		let url = urls[i];
+
+		if (record.urls[url] === undefined) record.urls[url] = 1;
+		else record.urls[url]++;
+
+		total_crawled++;
+	}
+
+	return record;
 }
 
 async function _getLinks($) {
@@ -75,14 +89,14 @@ process.on('message', async (message) => {
 	}
 
 	// Get record and mark as complete
-	let final_record = await redis.getCrawlRecord(id);
-	console.log('record at end of process: ' + final_record);
+	let final_record = JSON.parse(await redis.getCrawlRecord(id));
 	final_record.status = 'complete';
+
 	await redis.setCrawlRecord(id, JSON.stringify(final_record));
 
 });
 
 process.on('error', (err) => {
-  console.log('in error handler!!!');
+  console.log('in process error handler!!!');
   console.log(err);
 });
