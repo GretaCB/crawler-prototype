@@ -12,7 +12,7 @@ app.get('/', function(req, res) {
     res.send('How to use the Crawler service...');
 });
 
-app.post('/', function (req, res) {
+app.post('/', async function (req, res) {
   // Validate seed url in request body
 
   // Create unique id for redis key
@@ -24,18 +24,16 @@ app.post('/', function (req, res) {
   const msg = {
   	id: id, 
   	seedurl: req.body.seedurl, 
-  	levels: req.body.levels
+  	levels: req.body.levels,
+    status: 'pending'
   }
+  
+  // Put new record into datastore
+  await redis.setCrawlRecord(id, JSON.stringify(msg));
+  
+  // Send message to crawler to start crawling
+  process.send(msg); 
 
-  process.send(msg);   
-
-  // listen for messages from forked process
-  process.on('message', (message) => {
-  	// Update record with status
-    console.info(`Number of mails sent ${message.counter}`);
-  });   
-
-  msg.status = 'pending';
   return res.json(msg);
 
 });

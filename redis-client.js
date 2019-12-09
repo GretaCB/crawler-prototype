@@ -4,7 +4,7 @@ const {promisify} = require('util');
 
 const _requestcache = 1; // cache of already-requested page contents
 const _crawlstore = 2;  // datastore of crawls: triggered via the POST endpoint
-const _resultsstore = 3; // when spiders reach maxDepth, they push their results here?
+//const _resultsstore = 3; // when spiders reach maxDepth, they push their results here?
 
 async function _getRequestCache(key) {
 	const switchTo = promisify(client.select).bind(client);
@@ -27,6 +27,8 @@ async function _setRequestCache(key, val) {
 }
 
 async function _getCrawlRecord(key) {
+	console.log('in getCrawlRecord');
+	console.log(key);
 	const switchTo = promisify(client.select).bind(client);
 	await switchTo(_crawlstore);
 
@@ -53,11 +55,11 @@ client.on('error', (err) => {
 });
 
 // TODO: Is there a way to not trigger this for tests? Perhaps a redis mock?
-// client.on('ready', () => {
-// 	console.log('Flushing all DBs for fresh start (only use for prototype)...');
-// 	client.flushall();
-// 	console.log('Redis is ready!');
-// });
+client.on('ready', () => {
+	console.log('Flushing all DBs for fresh start (only use for prototype)...');
+	client.flushall();
+	console.log('Redis is ready!');
+});
 
 client.on('end', () => {
   console.log('Redis says goodbye!');
