@@ -1,7 +1,7 @@
 const { fork } = require('child_process');
 const express = require('express');
 const app = express()
-const port = 9000
+const PORT = process.env.PORT || 9000
 const uuidv4 = require('uuid/v4');
 const redis = require("./redis-client");
 const utils = require('./utils/index');
@@ -71,7 +71,7 @@ app.post('/', async function (req, res) {
 // Initialize potentially multiple redis DBs (request cache and crawl datastore)
 redis.init(function(err) {
   if (err) throw err;
-  app.listen(port, () => console.log(`Crawler ready on port ${port}...`))
+  app.listen(PORT, () => console.log(`Crawler ready on port ${PORT}...`))
 });
 
 // Export for testing
