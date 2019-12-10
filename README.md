@@ -15,11 +15,13 @@ docker-compose up -d
 
 The crawler is now ready to use :tada: Head over to `http://localhost:9000` in your browser.
 
-*To stop running the containers*
+**To stop running the containers**
+
 ```
 docker-compose down
 ```
-*Make changes to the crawler*
+**Make changes to the crawler**
+
 If you'd like to make changes to the crawler and try them out, rebuild and run the containers:
 ```
 docker-compose up --build
