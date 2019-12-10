@@ -22,7 +22,7 @@ async function _crawl(url, level) {
 
 		// Store links in cache
 		try {
-			await redis.setRequestCache(url, JSON.stringify(urls));
+			await redis.setExRequestCache(url, JSON.stringify(urls));
 		} catch(err){
 			console.log('caught error when requesting cache');
 			throw err;

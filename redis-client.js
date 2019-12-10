@@ -1,30 +1,33 @@
-const redis = require('redis');
-const client = redis.createClient();
 const {promisify} = require('util');
+const redis = require('redis');
+const client = redis.createClient({
+	host: 'redis-server',
+    port: 6379
+});
 
 async function _getRequestCache(key) {
-	const get = promisify(this.REQUESTCACHE.get).bind(this.REQUESTCACHE);
+	const get = promisify(client.get).bind(client);
 	return get(key).then(function(res) {
    		return res;
 	});
 }
 
-async function _setRequestCache(key, val) {
-	const set = promisify(this.REQUESTCACHE.set).bind(this.REQUESTCACHE);
+async function _setExRequestCache(key, val) {
+	const set = promisify(client.set).bind(client);
 	return set(key, val, 'EX', 36000).then(function(res) {
 		return;
 	});
 }
 
 async function _getCrawlRecord(key) {
-	const get = promisify(this.CRAWLSTORE.get).bind(this.CRAWLSTORE);
+	const get = promisify(client.get).bind(client);
 	return get(key).then(function(res) {
    		return res;
 	});
 }
 
 async function _setCrawlRecord(key, val) {
-	const set = promisify(this.CRAWLSTORE.set).bind(this.CRAWLSTORE);
+	const set = promisify(client.set).bind(client);
 	return set(key, val).then(function(res) {
 		return;
 	});
@@ -46,19 +49,10 @@ client.on('end', () => {
   process.exit();
 });
 
-// CLEANUP!
 module.exports = {
   getRequestCache: _getRequestCache,
-  setRequestCache: _setRequestCache,
+  setExRequestCache: _setExRequestCache,
   getCrawlRecord: _getCrawlRecord,
   setCrawlRecord: _setCrawlRecord,
-  CRAWLSTORE: redis.createClient(),
-  REQUESTCACHE: redis.createClient(),
-  init: function(next) {
-    var select = redis.RedisClient.prototype.select;
-    require('async').parallel([
-      select.bind(this.CRAWLSTORE, 3),
-      select.bind(this.REQUESTCACHE, 2)
-    ], next);
-  }
+  client: client
 };
