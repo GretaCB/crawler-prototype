@@ -121,7 +121,7 @@ The prototype:
 
 The **web service** consists of an Express.js app that forks a separate node child process for crawling. Forking multiple processes took a dark turn when I realized I had to somehow implement process manamgent. Running background processes (forking) is one way to get around Node's single threaded nature, but forking is slow since they are essentially clones of the main process. The option of using Worker Threads using node's Cluster module came to mind, but that would only handle vertical scaling. This wouldn't be a longterm solution for horizontal scaling, which was the goal. So I left the lonely forked process as-is due to time since I wanted to at least get a functioning prototype ready to submit. I'm not 100% sure how I would *prototype* separate crawl workers locally that could scale horizontally. Ideally, the crawlers would be completely separate from the web service in their own application. This separation would also help eliminate single points of failure and would require some sort of load balancer.
 
-The **datastore** is a Redis instance (key/value store). Initially, I envisioned using multiple Redis databases on the same instance (one DB for the crawl job store and one for the request cache). I eventually got this working. However, once I started to containerize that architecture in Docker, it became clear that wouldn't work. I also realized that since I was using different keys for the crawl jobs and for the cache I could just use the same DB for both. This wouldn't work at scale, but for the sake of time, here we are. Learning how to use Redis was where I spent most of my time on this project. If I had more time to learn how to Dockerize multiple redis instances, I would have used Redis for [the queue](https://optimalbits.github.io/bull/) as well.
+The **datastore** is a Redis instance (key/value store). Initially, I envisioned using multiple Redis databases on the same instance (one DB for the crawl job store and one for the request cache). I eventually got this working. However, once I started to containerize that architecture in Docker, it became clear that wouldn't work. I also realized that since I was using different keys for the crawl jobs and for the **cache** I could just use the same DB for both. This wouldn't work at scale, but for the sake of time, here we are. Learning how to use Redis was where I spent most of my time on this project. If I had more time to learn how to Dockerize multiple redis instances, I would have used Redis for [the queue](https://optimalbits.github.io/bull/) as well.
 
 ## How to deploy in production
 
@@ -129,7 +129,9 @@ The **datastore** is a Redis instance (key/value store). Initially, I envisioned
 
 2. Deploying the application service via serverless Lambda is a slightly different way to deploy that could be perfect for the crawler's recursive nature. Crawling per URL is a short-lived execution, has pretty low CPU usage, and doesn’t use many resources except for network I/O. This would make the application code easy to deploy (no need for configuring a bunch of infrastructure), would likely be cheaper than containerized infrastructure, and Lambda usage would scale down automatically by the cloud provider. 
 
-If using AWS as the cloud provider, I could use DynamoDB as the datastore and use DynamoDB Streams to trigger new Lambda runs. Note: The AWS docs state 
+If using AWS as the cloud provider, I could use DynamoDB as the datastore and use DynamoDB Streams to trigger new Lambda runs. 
+
+Note: The AWS docs state 
 > "the Lambda functions will share the read throughput for the stream they share"
 
 It would be good to verify whether or not this would cause a bottleneck in the crawler's case.
