@@ -1,18 +1,26 @@
 const { fork } = require('child_process');
+const fs = require('fs');
 const express = require('express');
 const app = express()
 const PORT = process.env.PORT || 9000
 const uuidv4 = require('uuid/v4');
 const redis = require("./redis-client");
 const utils = require('./utils/index');
+const showdown = require('showdown');
+const converter = new showdown.Converter();
 
 /* Configure express app */
 app.use(express.json());
 
+/* Serve API instructions */
 app.get('/', function(req, res) {
-    res.send('Welcome to the Crawler service...');
+  fs.readFile(__dirname + '/welcome.md', 'utf-8', function(err, data) {
+    return res.status(500).send({ error: 'Server error' })
+    res.send(converter.makeHtml(data));
+  });
 });
 
+/* Get status of an existing job */
 app.get('/status/:id', async function(req, res) {
     const status = {};
     const record = JSON.parse(await redis.getCrawlRecord(req.params.id));
@@ -26,6 +34,7 @@ app.get('/status/:id', async function(req, res) {
     return res.json(status);
 });
 
+/* Get url results of an existing job */
 app.get('/result/:id', async function(req, res) {
     const record = JSON.parse(await redis.getCrawlRecord(req.params.id));
     
@@ -36,8 +45,9 @@ app.get('/result/:id', async function(req, res) {
     return res.json(record.urls);
 });
 
+/* Create a new crawl job */
 app.post('/', async function (req, res) {
-  // Validate seed url in request body
+  // TODO: Validate seed url in request body
 
   // Create unique id for redis key
   const id = uuidv4();

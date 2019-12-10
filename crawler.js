@@ -6,9 +6,10 @@ const utils = require('./utils/index');
 let total_crawled = 0;
 let id = '';
 
+// Recursive crawl function called for every url up to given level
 async function _crawl(url, level) {   
 	// Check if we've reached the last level
-	// If so, no need to do anymore work
+	// If so, no need to do anymore crawling
 	if (level == 0) return;
 	
 	let urls = {};
@@ -29,12 +30,12 @@ async function _crawl(url, level) {
 		}
 	} else urls = JSON.parse(request_cached);
 
+	// Add newly crawled urls to record
 	let record = JSON.parse(await redis.getCrawlRecord(id));
 	let updatedRecord = _urlCount(urls, record);
-
 	updatedRecord.urls_crawled = total_crawled;
 
-	// Update results in record
+	// Update record in datastore
 	await redis.setCrawlRecord(id, JSON.stringify(updatedRecord));
 	return await _crawl(url, level-1);	
 }
@@ -53,6 +54,7 @@ function _urlCount(urls, record) {
 	return record;
 }
 
+// Crawl the page for link tags
 async function _getLinks($) {
 	let urls = {};
 
@@ -72,12 +74,13 @@ async function _getLinks($) {
  	return urls;
 }
 
+// Get contents of the page
 async function _getPage(url) {
 	const result = await axios.get(url);
 	return cheerio.load(result.data);
 };
 
-// receive message from master process
+// Receive message from master process
 process.on('message', async (message) => {  
 	id = message.id;
 
