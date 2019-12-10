@@ -68,11 +68,7 @@ app.post('/', async function (req, res) {
 
 });
 
-// Initialize potentially multiple redis DBs (request cache and crawl datastore)
-redis.init(function(err) {
-  if (err) throw err;
-  app.listen(PORT, () => console.log(`Crawler ready on port ${PORT}...`))
-});
+app.listen(PORT, () => console.log(`Crawler ready on port ${PORT}...`))
 
 // Export for testing
 module.exports = app;
