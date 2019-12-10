@@ -10,7 +10,7 @@ const utils = require('./utils/index');
 app.use(express.json());
 
 app.get('/', function(req, res) {
-    res.send('How to use the Crawler service...');
+    res.send('Welcome to the Crawler service...');
 });
 
 app.get('/status/:id', async function(req, res) {

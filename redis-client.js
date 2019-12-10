@@ -3,29 +3,29 @@ const client = redis.createClient();
 const {promisify} = require('util');
 
 async function _getRequestCache(key) {
-	const get = promisify(this.REQUESTCACHE.get).bind(client);
+	const get = promisify(this.REQUESTCACHE.get).bind(this.REQUESTCACHE);
 	return get(key).then(function(res) {
    		return res;
 	});
 }
 
 async function _setRequestCache(key, val) {
-	const set = promisify(this.REQUESTCACHE.set).bind(client);
-	return set(key, val, 'EX', 36000).then(function(huh) {
+	const set = promisify(this.REQUESTCACHE.set).bind(this.REQUESTCACHE);
+	return set(key, val, 'EX', 36000).then(function(res) {
 		return;
 	});
 }
 
 async function _getCrawlRecord(key) {
-	const get = promisify(this.CRAWLSTORE.get).bind(client);
+	const get = promisify(this.CRAWLSTORE.get).bind(this.CRAWLSTORE);
 	return get(key).then(function(res) {
    		return res;
 	});
 }
 
 async function _setCrawlRecord(key, val) {
-	const set = promisify(this.CRAWLSTORE.set).bind(client);
-	return set(key, val).then(function(huh) {
+	const set = promisify(this.CRAWLSTORE.set).bind(this.CRAWLSTORE);
+	return set(key, val).then(function(res) {
 		return;
 	});
 }
@@ -48,7 +48,6 @@ client.on('end', () => {
 
 // CLEANUP!
 module.exports = {
-  client: client,
   getRequestCache: _getRequestCache,
   setRequestCache: _setRequestCache,
   getCrawlRecord: _getCrawlRecord,

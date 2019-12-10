@@ -6,7 +6,7 @@ describe('GET /', function() {
   it('responds with expected string', function(done) {
     request(app)
       .get('/')
-      .expect('How to use the Crawler service...')
+      .expect('Welcome to the Crawler service...')
       .expect(200, done);
   });
 });
