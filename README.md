@@ -1,4 +1,4 @@
-# crawler-netlify
+# crawler-prototype
 
 Crawl the web :spider:
 
